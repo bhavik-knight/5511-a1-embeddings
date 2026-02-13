@@ -51,4 +51,3 @@ The shift in the 2nd and 3rd spots reveals that the models prioritize different 
 3.  **Model B** (the more advanced model) successfully identified the semantic link between my interest in "competitive gaming" and classmates who listed "video games" (Somto and Mohammad).
 
 This suggests that the larger MPNet model was better able to capture the semantic relationship between "gaming" and "video games," whereas the smaller MiniLM model relied more heavily on direct keyword overlaps like "music" and "sports."
-
