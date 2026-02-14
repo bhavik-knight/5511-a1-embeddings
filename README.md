@@ -30,6 +30,20 @@ The following figure illustrates a simple three-dimensional example of embedding
 
 ![Example of embeddings](embeddings_example_plot.png)
 
+
+## Data Analysis Experiments
+#### By: Bhavik Kantilal Bhagat
+
+The changes made in the classmates.csv file are as follows.
+
+| Name | Major Change? | Original Description | New Description | Impact |
+| --- | --- | --- | --- | --- |
+| Greg Kirczenow | No | "Swim, bike, run" | "I enjoy swimming, cycling, and running." | Imact Greg |
+| Mohammad Pakdoust | Yes | "I am passionate about outdoor activities like hiking and camping, and I also enjoy movies and video games." | "I prefer to stay indoors, and I also enjoy movies and video games." | Impace Mohammad |
+| Bhavik Kantilal Bhagat | No | "Chess, Maths and Music." | "I enjoy playing chess, solving logical puzzles, and listening to music." | Imapct Bhavik |
+
+
+
 ## Embedding Sensitivity Tests
 
 To test how sensitive the matchmaking results are to the choice of AI model, I compared the original model (`all-MiniLM-L6-v2`) with a larger, more complex model (`all-mpnet-base-v2`).
