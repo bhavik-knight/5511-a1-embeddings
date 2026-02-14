@@ -6,8 +6,8 @@ import json
 from pathlib import Path
 import numpy as np
 from scipy.stats import spearmanr
-from sklearn.metrics.pairwise import cosine_similarity
 
+from utils import calculate_cosine_similarity
 import config
 
 
@@ -36,20 +36,6 @@ def load_embeddings(filepath: Path) -> dict[str, list[float]]:
 # Similarity Calculation Functions
 # ============================================================================
 
-def calculate_cosine_similarity(vec1: np.ndarray, vec2: np.ndarray) -> float:
-    """
-    Calculate cosine similarity between two vectors.
-    
-    Args:
-        vec1: First embedding vector
-        vec2: Second embedding vector
-        
-    Returns:
-        Cosine similarity score (0 to 1)
-    """
-    v1 = vec1.reshape(1, -1)
-    v2 = vec2.reshape(1, -1)
-    return cosine_similarity(v1, v2)[0][0]
 
 
 def get_similarity_scores(

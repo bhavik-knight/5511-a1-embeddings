@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 # Project root directory (parent of src/)
-PROJECT_ROOT = Path().cwd().parent
+PROJECT_ROOT = Path(__file__).parent.parent
 
 # Data paths
 DATA_DIR = PROJECT_ROOT / "data"
