@@ -9,7 +9,7 @@ from utils import calculate_cosine_similarity
 import config
 
 
-def main():
+def main() -> None:
     """Main execution pipeline for data sensitivity analysis."""
     
     print("=" * 80)

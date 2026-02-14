@@ -26,7 +26,7 @@ def get_similarity_scores(
     """
     Calculate cosine similarity between target person and all others.
     
-    Args:
+    Params:
         target_name: Name of the target person
         embeddings: Dictionary of name -> embedding mappings
         
@@ -68,7 +68,7 @@ def print_correlation_results(correlation: float, p_value: float) -> None:
     """
     Print Spearman correlation results with interpretation.
     
-    Args:
+    Params:
         correlation: Spearman correlation coefficient
         p_value: Statistical significance p-value
     """
@@ -101,7 +101,7 @@ def print_top_matches_comparison(
     """
     Print side-by-side comparison of top matches from two models.
     
-    Args:
+    Params:
         top_a: Top matches from model A
         top_b: Top matches from model B
         model_a_name: Display name for model A
@@ -149,7 +149,7 @@ def compare_models(
     """
     Compare embeddings from two different models for a target person.
     
-    Args:
+    Params:
         target_name: Name of the person to analyze
         model_a_name: Name of the first model
         model_b_name: Name of the second model
@@ -198,7 +198,7 @@ def compare_models(
     print("=" * 80)
 
 
-def main():
+def main() -> None:
     """Main entry point for model comparison."""
     # Configuration
     target_name = "Nikola Kriznar"  # Change this to your name

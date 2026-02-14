@@ -16,7 +16,7 @@ class Visualizer:
         """
         Initialize the Visualizer.
         
-        Args:
+        Params:
             random_state: Random state for reproducibility
         """
         self.random_state = random_state
@@ -28,7 +28,7 @@ class Visualizer:
         """
         Reduce embeddings to 2D using UMAP.
         
-        Args:
+        Params:
             embeddings: Dictionary mapping names to embeddings
             
         Returns:
@@ -47,14 +47,14 @@ class Visualizer:
         self, 
         embeddings: dict[str, np.ndarray],
         output_path: Path,
-        figsize: tuple = (12, 8),
+        figsize: tuple[int, int] = (12, 8),
         dpi: int = 800,
         fontsize: int = 8
     ) -> None:
         """
         Create and save a 2D visualization of embeddings.
         
-        Args:
+        Params:
             embeddings: Dictionary mapping names to embeddings
             output_path: Path where visualization should be saved
             figsize: Figure size (width, height)

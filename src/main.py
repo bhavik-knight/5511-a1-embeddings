@@ -8,7 +8,7 @@ from visualizer import Visualizer
 import config
 
 
-def main():
+def main() -> None:
     """Main execution pipeline for embedding generation and visualization."""
     
     print("=" * 60)

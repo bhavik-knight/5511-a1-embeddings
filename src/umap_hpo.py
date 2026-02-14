@@ -17,8 +17,17 @@ from utils import load_embeddings_json, calculate_global_preservation_score
 import config
 
 
-def objective(trial, embeddings):
-    """Optuna objective function."""
+def objective(trial: optuna.trial.Trial, embeddings: np.ndarray) -> float:
+    """
+    Optuna objective function for UMAP hyperparameter optimization.
+    
+    Params:
+        trial: Optuna trial object
+        embeddings: High-dimensional embeddings to reduce
+        
+    Returns:
+        Preservation score (Spearman correlation)
+    """
     n_neighbors = trial.suggest_int('n_neighbors', 2, 50)
     min_dist = trial.suggest_float('min_dist', 0.0, 0.5)
     metric = trial.suggest_categorical('metric', ['cosine', 'euclidean', 'manhattan'])
@@ -48,8 +57,11 @@ def objective(trial, embeddings):
         
     return score
 
-def run_hpo():
-    """Main HPO loop."""
+def run_hpo() -> None:
+    """
+    Main HPO loop for UMAP tuning.
+    Loads embeddings, runs optimization, and saves results.
+    """
     print("=" * 80)
     print("UMAP Hyperparameter Optimization")
     print("=" * 80)
@@ -142,6 +154,7 @@ def run_hpo():
     
     print(f"\n✓ Stability visualizations saved to {config.OUTPUT_DIR}")
     print("=" * 80)
+
 
 if __name__ == "__main__":
     run_hpo()

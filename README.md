@@ -114,6 +114,6 @@ Compares rankings between `all-MiniLM-L6-v2` and the larger `all-mpnet-base-v2`.
 
 ### 3. [UMAP Hyperparameter Optimization (Sridhar Vadla)](UMAP_HPO.md)
 Uses Bayesian Optimization (Optuna) to find the best UMAP settings for 2D visualization.
-- **Key Finding**: Optimized for **Manhattan distance** and **8 neighbors**, achieving a preservation score of **0.56**.
+- **Key Finding**: Optimized for **Manhattan distance** and **12 neighbors**, achieving a preservation score of **0.64** (Trial 62).
 
 ---

@@ -13,7 +13,7 @@ class DataLoader:
         """
         Initialize the DataLoader.
         
-        Args:
+        Params:
             csv_path: Path to the CSV file
             encoding: File encoding (default: cp1252)
         """
@@ -38,7 +38,7 @@ class DataLoader:
         
         return self.classmates_map
     
-    def get_paragraphs(self) -> list:
+    def get_paragraphs(self) -> list[str]:
         """
         Get list of paragraphs from loaded data.
         
@@ -47,7 +47,7 @@ class DataLoader:
         """
         return list(self.classmates_map.keys())
     
-    def get_names(self) -> list:
+    def get_names(self) -> list[str]:
         """
         Get list of names from loaded data.
         

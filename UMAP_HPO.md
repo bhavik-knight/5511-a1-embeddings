@@ -12,20 +12,20 @@ We used **Bayesian Optimization (Optuna)** to find the parameters that best pres
 - **Metric**: Maximize the **Spearman Global Preservation Score**.
     - This score measures the correlation between high-dimensional cosine similarities and low-dimensional (2D) Euclidean distances.
 
-## Best Results (Trial 96)
+## Best Results (Trial 62)
 | Parameter | Best Value |
 | :--- | :--- |
 | **Metric** | **manhattan** |
-| **n_neighbors** | **8** |
-| **min_dist** | **0.051** |
-| **Best Correlation** | **0.5641** |
+| **n_neighbors** | **12** |
+| **min_dist** | **0.115** |
+| **Best Correlation** | **0.6386** |
 
 ### Convergence History
 ![Optimization History](output/optimization_history.png)
 
 ## Detailed Parameters & Impact
-1. **n_neighbors (8)**: A low value indicates that the model prioritizes **local structure** (preserving small clusters of very similar classmates) over the global "cloud" shape.
-2. **min_dist (0.051)**: This low value allows points to be packed closely together, which helps highlight dense clusters of similar interests.
+1. **n_neighbors (12)**: This value balances local and global structure, allowing the model to preserve small clusters of similar classmates while maintaining their relative positions in the broader "map".
+2. **min_dist (0.115)**: This moderate value provides enough space between points to avoid overcrowding, making individual names easier to read while still maintaining the integrity of the clusters.
 3. **Metric (manhattan)**: Interestingly, Manhattan distance outperformed Euclidean and Cosine for the 2D projection, suggesting it better captures the grid-like relationship between distinct hobbies in reduced space.
 
 ## Stability Analysis
@@ -34,4 +34,4 @@ We tested the "Best Parameters" across three different random seeds (42, 123, 99
 - **Visual Evidence**: See `output/visualization_seed_*.png`.
 
 ## Conclusion
-The optimized parameters significantly improved the "readability" of the map. With a preservation score of **0.56**, we can be confident that two people appearing close together in our 2D plot are actually similar in the original high-dimensional embedding space.
+The optimized parameters significantly improved the "readability" of the map. With a preservation score of **0.64**, we can be confident that two people appearing close together in our 2D plot are actually similar in the original high-dimensional embedding space.

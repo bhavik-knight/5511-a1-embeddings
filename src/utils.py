@@ -16,7 +16,7 @@ def calculate_cosine_similarity(vec1: np.ndarray, vec2: np.ndarray) -> float:
     """
     Calculate cosine similarity between two vectors.
     
-    Args:
+    Params:
         vec1: First embedding vector
         vec2: Second embedding vector
         
@@ -33,7 +33,7 @@ def load_embeddings_json(filepath: Path) -> dict[str, np.ndarray]:
     """
     Load embeddings from a JSON file and convert to numpy arrays.
     
-    Args:
+    Params:
         filepath: Path to the JSON file
         
     Returns:
@@ -49,7 +49,7 @@ def save_embeddings_json(embeddings: dict[str, np.ndarray], filepath: Path) -> N
     """
     Save embeddings dictionary to a JSON file.
     
-    Args:
+    Params:
         embeddings: Dictionary mapping names to embedding vectors
         filepath: Path where the JSON file should be saved
     """
@@ -67,7 +67,7 @@ def get_top_matches(scores: dict[str, float], top_n: int = 3) -> list[tuple[str,
     """
     Get the top N matches based on similarity scores.
     
-    Args:
+    Params:
         scores: Dictionary of name -> score mappings
         top_n: Number of top matches to return
         
@@ -84,7 +84,7 @@ def calculate_rank_correlation(
     """
     Calculate Spearman's rank correlation between two sets of scores.
     
-    Args:
+    Params:
         scores_a: First set of similarity scores
         scores_b: Second set of similarity scores
         
@@ -108,7 +108,7 @@ def calculate_global_preservation_score(
     Calculate how well the global structure is preserved after dimensionality reduction.
     Uses mean Spearman correlation between high-dim similarities and low-dim distances.
     
-    Args:
+    Params:
         high_dim_data: Original high-dimensional embeddings
         low_dim_data: Reduced 2D/3D embeddings
         

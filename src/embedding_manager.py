@@ -15,7 +15,7 @@ class EmbeddingManager:
         """
         Initialize the EmbeddingManager.
         
-        Args:
+        Params:
             model_name: Name of the sentence transformer model to use
         """
         self.model_name = model_name
@@ -26,7 +26,7 @@ class EmbeddingManager:
         """
         Generate embeddings for given paragraphs.
         
-        Args:
+        Params:
             paragraphs: List of text paragraphs to embed
             names: List of names corresponding to each paragraph
             
@@ -48,7 +48,7 @@ class EmbeddingManager:
         """
         Save embeddings to JSON file.
         
-        Args:
+        Params:
             output_path: Path where JSON file should be saved
         """
         if not self.embeddings:
@@ -69,7 +69,7 @@ class EmbeddingManager:
         """
         Load embeddings from JSON file.
         
-        Args:
+        Params:
             input_path: Path to JSON file containing embeddings
             
         Returns:
