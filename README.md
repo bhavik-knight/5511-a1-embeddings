@@ -100,57 +100,20 @@ The following figure illustrates a simple three-dimensional example of embedding
 
 ---
 
-## Data Analysis Experiments: Sensitivity Analysis
-### By: Bhavik Kantilal Bhagat
+## Data Analysis Experiments
 
-The sensitivity analysis measures how much the embedding vector changes when we modify the input text. High similarity (≈1.0) indicates the model is robust to the change; lower similarity indicates the model detected a significant semantic shift.
+We have conducted three major experiments to validate and optimize our embedding pipeline. Detailed methodology and findings for each are linked below:
 
-| Name | Major Change? | Original Description | New Description | Similarity |
-| --- | --- | --- | --- | --- |
-| Greg Kirczenow | No | "Swim, bike, run" | "swimming, cycling, running" | 0.8734 |
-| Mohammad Pakdoust | Yes | "...passionate about outdoor activities..." | "...prefer to stay indoors..." | 0.5617 |
-| Bhavik Bhagat | No | "Chess, Maths and Music." | "I enjoy playing chess, solving math puzzles..." | 0.7275 |
+### 1. [Data Sensitivity Analysis (Bhavik Bhagat)](SENSITIVITY_ANALYSIS.md)
+Measures the impact of minor (synonym) vs. major (antonym) text changes on embedding vectors. 
+- **Key Finding**: The model is robust to synonymous rephrasing (similarity > 0.7) but highly sensitive to semantic reversal (~0.56 similarity).
 
-### Key Insights:
-1. **Minor Changes (Synonyms)** results stay in the **0.70-0.90** range. The model recognizes the context remains identical despite phrasing differences.
-2. **Major Changes (Antonyms)** drop the similarity significantly to the **0.40-0.70** range, showing the transformer's sensitivity to semantic intent.
+### 2. [Model Comparison Study (Nikola Kriznar)](MODEL_COMPARISON.md)
+Compares rankings between `all-MiniLM-L6-v2` and the larger `all-mpnet-base-v2`.
+- **Key Finding**: There is a **0.387** Spearman correlation between models, with both agreeing on the top match but diverging on more nuanced relationships.
 
----
-
-## Embedding Sensitivity Tests: Model Comparison
-### By: Nikola Kriznar
-To test how sensitive results are to the model choice, we compared `all-MiniLM-L6-v2` with the 3x larger `all-mpnet-base-v2`.
-
-**Latest Results (for Nikola Kriznar):**
-* **Spearman's Rank Correlation:** 0.3873 (Weak to Moderate agreement)
-
-| Rank | all-MiniLM-L6-v2 (Smaller) | Score | all-mpnet-base-v2 (Larger) | Score |
-| :--- | :--- | :--- | :--- | :--- |
-| 1 | Zilong Wang | 0.7545 | Zilong Wang | 0.8343 |
-| 2 | Binziya Siddik | 0.7036 | Somto Muotoe | 0.7272 |
-| 3 | Bhavik Kantilal Bhagat | 0.6490 | Mohammad Pakdoust | 0.6974 |
-| 4 | Sridhar Vadla | 0.6353 | Pawan Lingras | 0.6306 |
-| 5 | Md Riad Arifin | 0.6173 | Md Musfiqur Rahman | 0.6261 |
-
-While the overall relationship density is preserved, the models prioritize different semantic features:
-- **MiniLM** (Smaller) matched me with classmates explicitly listing "Music" as a primary keyword.
-- **MPNet** (Larger) identified more subtle semantic links, such as the relationship between "competitive gaming" and specific video game interests.
+### 3. [UMAP Hyperparameter Optimization (Sridhar Vadla)](UMAP_HPO.md)
+Uses Bayesian Optimization (Optuna) to find the best UMAP settings for 2D visualization.
+- **Key Finding**: Optimized for **Manhattan distance** and **8 neighbors**, achieving a preservation score of **0.56**.
 
 ---
-
-## UMAP Hyperparameter Optimization
-### By: Sridhar Vadla
-
-To ensure the 2D visualization accurately reflects the 384-dimensional relationships, we implemented **Bayesian Optimization** via **Optuna**.
-
-The optimization objective maximizes the **Spearman Correlation** between high-dimensional cosine similarities and low-dimensional Euclidean distances.
-
-### Optimized Parameters:
-| Best Trial | Metric | n_neighbors | min_dist | Spearman Score |
-| :--- | :--- | :--- | :--- | :--- |
-| **Trial 96** | **manhattan** | **8** | **0.051** | **0.5641** |
-
-#### Search Convergence & Stability:
-![Optimization History](output/optimization_history.png)
-
-**Stability Insight:** Using the optimized parameters (Manhattan distance, 8 neighbors), the visualization remains visually stable across different random seeds, confirming that the clusters are meaningful and not artifacts of dimensionality reduction noise.
