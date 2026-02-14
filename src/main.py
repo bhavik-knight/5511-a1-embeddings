@@ -19,7 +19,7 @@ def main() -> None:
     # Step 1: Load data
     print("\n[1/4] Loading data from CSV...")
     loader = DataLoader(config.CLASSMATES_CSV)
-    # classmates_map = loader.load_data()
+    classmates_map = loader.load_data()
     paragraphs = loader.get_paragraphs()
     names = loader.get_names()
     print(f"✓ Loaded {len(names)} classmate records")

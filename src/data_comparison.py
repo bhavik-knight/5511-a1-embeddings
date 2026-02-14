@@ -24,7 +24,7 @@ def main() -> None:
     # Step 1: Load the current (modified) data
     print("\n[1/4] Loading modified classmates data...")
     loader = DataLoader(config.CLASSMATES_CSV)
-    # classmates_map = loader.load_data()
+    classmates_map = loader.load_data()
     paragraphs = loader.get_paragraphs()
     names = loader.get_names()
     print(f"✓ Loaded {len(names)} classmate records")
