@@ -6,13 +6,19 @@ readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
     "branca",
+    "dash>=4.0.0",
+    "kaleido>=1.2.0",
     "matplotlib",
-    "numpy",
+    "numba>=0.58.0",
+    "numpy<2",
+    "optuna>=4.7.0",
     "pandas",
+    "plotly>=6.5.2",
     "pyvis",
     "scikit-learn",
     "scipy",
     "seaborn",
     "sentence-transformers",
-    "umap-learn",
+    "setuptools<70",
+    "umap-learn>=0.5.4",
 ]
