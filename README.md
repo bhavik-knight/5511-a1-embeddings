@@ -1,50 +1,85 @@
 # MCDA5511 - Assignment1 - Sentence Embeddings
 
-This visualization shows the similarity between classmates based on their stated written interests.  
-Each point represents a student, and the distance between points reflects how similar their interests are. These positions are based on sentence embeddings generated using the all-MiniLM-L6-v2 model and then reduced to two dimensions using UMAP for visualization.
+This project visualizes the similarity between classmates based on their stated interests using high-dimensional sentence embeddings and UMAP dimensionality reduction.
 
-Students with similar interests appear closer together, while those with different interests appear farther apart.
+The application uses the `all-MiniLM-L6-v2` model to generate 384-dimensional embeddings, which are then projected into 2D for interactive or static visualization.
 
 ## Generated Visualization
 
 ![Classmates similarity visualization](output/visualization.png)
 
+## Project Architecture & Refactoring
+
+The project has been refactored into a modular, professional Python structure to ensure maintainability and testability.
+
+### Key Components:
+- **`src/config.py`**: Centralized configuration for all file paths, model names, and visualization settings.
+- **`src/utils.py`**: A shared utility hub containing standardized mathematical functions (Cosine Similarity, Spearman Rank Correlation) and common I/O operations for embeddings.
+- **`src/data_loader.py`**: Handles CSV parsing and data extraction.
+- **`src/embedding_manager.py`**: Manages the loading of SentenceTransformer models and the generation/caching of embeddings.
+- **`src/visualizer.py`**: Encapsulates the UMAP reduction and Matplotlib plotting logic.
+
+---
+
 ## Directory Structure
 
 ```text
 .
-├── LICENSE
-├── README.md
 ├── data
-│   └── classmates.csv
+│   └── classmates.csv          # Input data
 ├── output
-│   ├── embeddings.json
-│   ├── optimization_history.png
-│   ├── umap_hpo_results.csv
-│   ├── visualization.png
-│   ├── visualization_seed_123.png
-│   ├── visualization_seed_42.png
-│   └── visualization_seed_999.png
-├── pyproject.toml
+│   ├── embeddings.json         # Generated embeddings (cached)
+│   ├── optimization_history.png # UMAP HPO results
+│   ├── umap_hpo_results.csv    # Full HPO trial logs
+│   ├── visualization.png       # Final 2D plot
+│   └── visualization_seed_*.png # Stability test plots
 ├── src
 │   ├── __init__.py
-│   ├── config.py
-│   ├── data_loader.py
-│   ├── embedding_manager.py
-│   ├── main.py
-│   ├── model_comparison.py
-│   └── visualizer.py
-└── uv.lock
+│   ├── config.py               # Central config
+│   ├── data_comparison.py      # Sensitivity analysis script
+│   ├── data_loader.py          # Data ingestion
+│   ├── embedding_manager.py    # Embedding orchestration
+│   ├── main.py                 # Primary entry point
+│   ├── model_comparison.py     # Cross-model ranking analysis
+│   ├── umap_hpo.py             # Bayesian hyperparameter tuning
+│   ├── utils.py                # Shared math/IO utilities
+│   └── visualizer.py           # UMAP/Plotting engine
+├── pyproject.toml              # Dependencies (uv)
+└── uv.lock                     # Lockfile
 ```
 
-## How to run this project
+## How to Run
 
+This project uses `uv` for dependency management.
 
+### 1. Initial Setup
 ```bash
 uv sync
-uv run python main.py
 ```
 
+### 2. Generate Main Visualization
+This runs the full pipeline: load data -> generate embeddings -> save -> plot.
+```bash
+uv run python src/main.py
+```
+
+### 3. Run Model Comparison Analysis
+Compares rankings between `all-MiniLM-L6-v2` and `all-mpnet-base-v2`.
+```bash
+uv run python src/model_comparison.py
+```
+
+### 4. Run Data Sensitivity Analysis
+Measures the impact of minor (synonym) vs. major (antonym) text changes on embedding vectors.
+```bash
+uv run python src/data_comparison.py
+```
+
+### 5. Run UMAP Hyperparameter Optimization (HPO)
+Uses Optuna to find the best UMAP parameters for preserving global structure.
+```bash
+uv run python src/umap_hpo.py
+```
 
 ---
 
@@ -65,104 +100,49 @@ The following figure illustrates a simple three-dimensional example of embedding
 
 ---
 
-
-## Data Analysis Experiments
+## Data Analysis Experiments: Sensitivity Analysis
 ### By: Bhavik Kantilal Bhagat
 
-The changes made in the classmates.csv file are as follows.
+The sensitivity analysis measures how much the embedding vector changes when we modify the input text. High similarity (≈1.0) indicates the model is robust to the change; lower similarity indicates the model detected a significant semantic shift.
 
-| Name | Major Change? | Original Description | New Description | Impact |
+| Name | Major Change? | Original Description | New Description | Similarity |
 | --- | --- | --- | --- | --- |
-| Greg Kirczenow | No | "Swim, bike, run" | "swimming, cycling, running" | 0.873410 |
-| Mohammad Pakdoust | Yes | "I am passionate about outdoor activities like hiking and camping, and I also enjoy movies and video games." | "I prefer to stay indoors, and I also do not like to watch movies or play video games." | 0.561741 |
-| Bhavik Kantilal Bhagat | No | "Chess, Maths and Music." | "I enjoy playing chess, solving math puzzles, and listening to music." | 0.727488 |
+| Greg Kirczenow | No | "Swim, bike, run" | "swimming, cycling, running" | 0.8734 |
+| Mohammad Pakdoust | Yes | "...passionate about outdoor activities..." | "...prefer to stay indoors..." | 0.5617 |
+| Bhavik Bhagat | No | "Chess, Maths and Music." | "I enjoy playing chess, solving math puzzles..." | 0.7275 |
 
-### Impact of Changes
-
-#### 1. Minor Changes (Synonyms) → High Similarity
-
-When you replace a word like "enjoy" with "like," or rephrase with synonyms, the model produces a **high similarity score** (often 0.70 to 0.90) because:
-
-- **Shared Context**: During training on millions of sentences, words like "enjoy" and "like" appear in almost identical environments (e.g., "I ____ trail running")
-- **Vector Proximity**: Because these words are interchangeable in most contexts, the model places them very close together in the high-dimensional embedding space
-- **Small Angle**: Cosine similarity measures the angle between two vectors. Since synonyms point in almost the same direction, the cosine of the angle is close to 1.0
-
-**Example**: Greg's change from "Swim, bike, run" to "swimming, cycling, running" resulted in **0.873** similarity - very high because the core activities remain identical.
-
-#### 2. Major Changes (Antonyms/Opposite Meaning) → Lower Similarity
-
-Antonyms or opposite meanings result in **lower scores** (often 0.40 to 0.70) because:
-
-- **Opposite Semantic Direction**: While antonyms like "enjoy" vs. "don't like" might appear in similar sentence structures, the sentiment and intent are opposites. Modern transformers are sensitive to these shifts
-- **Vector Displacement**: A major change pushes the new vector into a different neighborhood of the embedding space (e.g., from "Outdoor Sports" cluster to "Indoor Hobbies" cluster)
-- **Larger Angle**: Because the meaning has shifted, the vector points in a different direction, resulting in a lower cosine similarity score
-
-**Example**: Mohammad's change from "outdoor activities like hiking and camping" to "prefer to stay indoors" resulted in **0.561** similarity - much lower because the core meaning reversed.
-
-#### Summary Table
-
-| Change Type | Impact on Meaning | Resulting Vector Space | Similarity Score |
-|-------------|-------------------|------------------------|------------------|
-| **Minor (Synonym)** | Preserves intent/context | Vectors stay in the same "cluster" | High (0.70-0.90) |
-| **Major (Antonym)** | Reverses or alters intent | Vector moves to a different "cluster" | Lower (0.40-0.70) |
-
-**Key Insight**: The embedding model is sensitive to both semantic content and phrasing. Even minor paraphrasing can result in noticeable differences (0.70-0.87), while major semantic changes show significantly lower similarity (0.56).
+### Key Insights:
+1. **Minor Changes (Synonyms)** results stay in the **0.70-0.90** range. The model recognizes the context remains identical despite phrasing differences.
+2. **Major Changes (Antonyms)** drop the similarity significantly to the **0.40-0.70** range, showing the transformer's sensitivity to semantic intent.
 
 ---
 
-## Embedding Sensitivity Tests
+## Embedding Sensitivity Tests: Model Comparison
 ### By: Nikola Kriznar
-To test how sensitive the matchmaking results are to the choice of AI model, I compared the original model (`all-MiniLM-L6-v2`) with a larger, more complex model (`all-mpnet-base-v2`).
+To test how sensitive results are to the model choice, we compared `all-MiniLM-L6-v2` with the 3x larger `all-mpnet-base-v2`.
 
-**Quantitative Results**
-I calculated the Spearman Rank Correlation between the rankings produced by the two models for my own profile ("Nikola Kriznar").
-* **Spearman's Rank Correlation:** 0.3873
+**Latest Results (for Nikola Kriznar):**
+* **Spearman's Rank Correlation:** 0.5343 (Moderate agreement)
 
-This score is surprisingly low (on a scale of 0 to 1), indicating that the choice of model significantly changes which classmates are considered similar to me. The results are highly sensitive to model selection.
-
-**Qualitative Analysis**
-While the results changed significantly, the #1 match remained stable across both models:
-* **Model A (MiniLM) Top 3:** Zilong Wang, Binziya Siddik, Bhavik Kantilal Bhagat
-* **Model B (MPNet) Top 3:** Zilong Wang, Somto Muotoe, Mohammad Pakdoust
-
-The shift in the 2nd and 3rd spots reveals that the models prioritize different semantic features.
-1.  **Zilong Wang** remained #1 in both, likely due to the shared keyword "sports" (My profile: "sports/gym", His: "likes sports").
-2.  **Model A** prioritized "Music," matching me with classmates who explicitly listed music as a hobby (Binziya and Bhavik).
-3.  **Model B** (the more advanced model) successfully identified the semantic link between my interest in "competitive gaming" and classmates who listed "video games" (Somto and Mohammad).
-
+While the overall relationship density is moderately preserved, the models prioritize different semantic features:
+- **MiniLM** (Smaller) matched me with classmates explicitly listing "Music" as a primary keyword.
+- **MPNet** (Larger) identified more subtle semantic links, such as the relationship between "competitive gaming" and specific video game interests.
 
 ---
 
 ## UMAP Hyperparameter Optimization
 ### By: Sridhar Vadla
 
-To ensure the 2D visualization accurately reflects the complex relationships within the original 384-dimensional embedding space, I performed a **Bayesian Hyperparameter Optimization (HPO)** using the **Optuna** framework. This experiment aimed to find the optimal UMAP settings—specifically balancing local and global structure preservation—rather than relying on default parameters which often produce misleading clusters in small datasets.
+To ensure the 2D visualization accurately reflects the 384-dimensional relationships, we implemented **Bayesian Optimization** via **Optuna**.
 
-### Methodology
-The study utilized the **Tree-structured Parzen Estimator (TPE)** sampler to navigate a three-parameter search space:
-*   **n_neighbors**: [2, 50]
-*   **min_dist**: [0.0, 0.5]
-*   **metric**: ['cosine', 'euclidean', 'manhattan']
+The optimization objective maximizes the **Spearman Correlation** between high-dimensional cosine similarities and low-dimensional Euclidean distances.
 
-The "ground truth" was defined as the high-dimensional **Cosine Similarity** matrix. The optimization goal was to maximize the average **Spearman Rank Correlation** across all nodes. This metric evaluates how well the relative rankings of classmates are maintained during dimensionality reduction.
-
-### Experimental Results
-After exactly **100 trials**, the optimization determined that **Manhattan distance** outperformed both Cosine and Euclidean metrics for this dataset. 
-
-| Best Trial | Metric | n_neighbors | min_dist | Spearman Correlation |
+### Optimized Parameters:
+| Best Trial | Metric | n_neighbors | min_dist | Spearman Score |
 | :--- | :--- | :--- | :--- | :--- |
-| **Trial 36** | **manhattan** | **8** | **0.370** | **0.6242** |
+| **Trial 96** | **manhattan** | **8** | **0.051** | **0.5641** |
 
-#### Search Convergence
+#### Search Convergence & Stability:
 ![Optimization History](output/optimization_history.png)
 
-### Key Insights & Stability
-*   **The Manhattan Advantage**: Manhattan distance proved more robust in high-dimensional space, likely due to its reduced sensitivity to outliers compared to the squared-error nature of Euclidean distance.
-*   **Cluster Balance**: A relatively low `n_neighbors` value (8) suggests that interest-based similarities are highly specific (local), while the moderate `min_dist` (0.370) ensures points are spread sufficiently for visual clarity without shattering the global topology.
-*   **Reproducibility**: The best parameters were verified against three different random seeds (42, 123, 999), demonstrating high visual stability.
-
-#### Optimized Visualizations (Seed Stability)
-| Seed 42 | Seed 123 | Seed 999 |
-| :---: | :---: | :---: |
-| ![Seed 42](output/visualization_seed_42.png) | ![Seed 123](output/visualization_seed_123.png) | ![Seed 999](output/visualization_seed_999.png) |
-
+**Stability Insight:** Using the optimized parameters (Manhattan distance, 8 neighbors), the visualization remains visually stable across different random seeds, confirming that the clusters are meaningful and not artifacts of dimensionality reduction noise.

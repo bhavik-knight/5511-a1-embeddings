@@ -2,10 +2,10 @@
 Embedding Manager Module
 Handles generation and saving of sentence embeddings.
 """
-import json
 from pathlib import Path
 import numpy as np
 from sentence_transformers import SentenceTransformer
+from utils import load_embeddings_json, save_embeddings_json
 
 
 class EmbeddingManager:
@@ -54,14 +54,7 @@ class EmbeddingManager:
         if not self.embeddings:
             raise ValueError("No embeddings to save. Generate embeddings first.")
         
-        # Convert numpy arrays to lists for JSON serialization
-        embeddings_serializable = {
-            name: embedding.tolist() 
-            for name, embedding in self.embeddings.items()
-        }
-        
-        with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(embeddings_serializable, f, indent=2)
+        save_embeddings_json(self.embeddings, output_path)
     
     def get_embeddings(self) -> dict[str, np.ndarray]:
         """
@@ -82,13 +75,5 @@ class EmbeddingManager:
         Returns:
             Dictionary mapping names to embeddings
         """
-        with open(input_path, "r", encoding="utf-8") as f:
-            embeddings_dict = json.load(f)
-        
-        # Convert lists back to numpy arrays
-        self.embeddings = {
-            name: np.array(embedding) 
-            for name, embedding in embeddings_dict.items()
-        }
-        
+        self.embeddings = load_embeddings_json(input_path)
         return self.embeddings
