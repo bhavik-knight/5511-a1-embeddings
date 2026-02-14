@@ -9,12 +9,44 @@ Students with similar interests appear closer together, while those with differe
 
 ![Classmates similarity visualization](output/visualization.png)
 
+## Directory Structure
+
+```text
+.
+├── LICENSE
+├── README.md
+├── data
+│   └── classmates.csv
+├── output
+│   ├── embeddings.json
+│   ├── optimization_history.png
+│   ├── umap_hpo_results.csv
+│   ├── visualization.png
+│   ├── visualization_seed_123.png
+│   ├── visualization_seed_42.png
+│   └── visualization_seed_999.png
+├── pyproject.toml
+├── src
+│   ├── __init__.py
+│   ├── config.py
+│   ├── data_loader.py
+│   ├── embedding_manager.py
+│   ├── main.py
+│   ├── model_comparison.py
+│   └── visualizer.py
+└── uv.lock
+```
+
 ## How to run this project
+
 
 ```bash
 uv sync
 uv run python main.py
 ```
+
+
+---
 
 ## What Are Embeddings?
 ### By: Miguel Angel Palafox Gomez
@@ -35,7 +67,7 @@ The following figure illustrates a simple three-dimensional example of embedding
 
 
 ## Data Analysis Experiments
-#### By: Bhavik Kantilal Bhagat
+### By: Bhavik Kantilal Bhagat
 
 The changes made in the classmates.csv file are as follows.
 
@@ -77,50 +109,6 @@ Antonyms or opposite meanings result in **lower scores** (often 0.40 to 0.70) be
 **Key Insight**: The embedding model is sensitive to both semantic content and phrasing. Even minor paraphrasing can result in noticeable differences (0.70-0.87), while major semantic changes show significantly lower similarity (0.56).
 
 ---
-
-
-## Data Analysis Experiments
-#### By: Bhavik Kantilal Bhagat
-
-The changes made in the classmates.csv file are as follows.
-
-| Name | Major Change? | Original Description | New Description | Impact |
-| --- | --- | --- | --- | --- |
-| Greg Kirczenow | No | "Swim, bike, run" | "swimming, cycling, running" | 0.873410 |
-| Mohammad Pakdoust | Yes | "I am passionate about outdoor activities like hiking and camping, and I also enjoy movies and video games." | "I prefer to stay indoors, and I also do not like to watch movies or play video games." | 0.561741 |
-| Bhavik Kantilal Bhagat | No | "Chess, Maths and Music." | "I enjoy playing chess, solving math puzzles, and listening to music." | 0.727488 |
-
-### Impact of Changes
-
-#### 1. Minor Changes (Synonyms) → High Similarity
-
-When you replace a word like "enjoy" with "like," or rephrase with synonyms, the model produces a **high similarity score** (often 0.70 to 0.90) because:
-
-- **Shared Context**: During training on millions of sentences, words like "enjoy" and "like" appear in almost identical environments (e.g., "I ____ trail running")
-- **Vector Proximity**: Because these words are interchangeable in most contexts, the model places them very close together in the high-dimensional embedding space
-- **Small Angle**: Cosine similarity measures the angle between two vectors. Since synonyms point in almost the same direction, the cosine of the angle is close to 1.0
-
-**Example**: Greg's change from "Swim, bike, run" to "swimming, cycling, running" resulted in **0.873** similarity - very high because the core activities remain identical.
-
-#### 2. Major Changes (Antonyms/Opposite Meaning) → Lower Similarity
-
-Antonyms or opposite meanings result in **lower scores** (often 0.40 to 0.70) because:
-
-- **Opposite Semantic Direction**: While antonyms like "enjoy" vs. "don't like" might appear in similar sentence structures, the sentiment and intent are opposites. Modern transformers are sensitive to these shifts
-- **Vector Displacement**: A major change pushes the new vector into a different neighborhood of the embedding space (e.g., from "Outdoor Sports" cluster to "Indoor Hobbies" cluster)
-- **Larger Angle**: Because the meaning has shifted, the vector points in a different direction, resulting in a lower cosine similarity score
-
-**Example**: Mohammad's change from "outdoor activities like hiking and camping" to "prefer to stay indoors" resulted in **0.565** similarity - much lower because the core meaning reversed.
-
-#### Summary Table
-
-| Change Type | Impact on Meaning | Resulting Vector Space | Similarity Score |
-|-------------|-------------------|------------------------|------------------|
-| **Minor (Synonym)** | Preserves intent/context | Vectors stay in the same "cluster" | High (0.70-0.90) |
-| **Major (Antonym)** | Reverses or alters intent | Vector moves to a different "cluster" | Lower (0.40-0.70) |
-
-**Key Insight**: The embedding model is sensitive to both semantic content and phrasing. Even minor paraphrasing can result in noticeable differences (0.70-0.87), while major semantic changes show significantly lower similarity (0.56).
-
 
 ## Embedding Sensitivity Tests
 ### By: Nikola Kriznar
@@ -177,22 +165,3 @@ After exactly **100 trials**, the optimization determined that **Manhattan dista
 | Seed 42 | Seed 123 | Seed 999 |
 | :---: | :---: | :---: |
 | ![Seed 42](output/visualization_seed_42.png) | ![Seed 123](output/visualization_seed_123.png) | ![Seed 999](output/visualization_seed_999.png) |
-
-
----
-
-
-## UMAP Hyperparameter Optimization
-### By: Sridhar Vadla
-UMAP Hyperparameter Optimization Experiment
-To ensure the 2D visualization accurately reflects the complex relationships within the original 384-dimensional embedding space, I performed a Bayesian Hyperparameter Optimization (HPO) using the Optuna framework. This experiment aimed to find the optimal UMAP settings—specifically balancing local and global structure preservation—rather than relying on default parameters which often produce misleading clusters in small datasets.
-
-Methodology The study utilized the Tree-structured Parzen Estimator (TPE) sampler to navigate a three-parameter search space: n_neighbors (2 to 50), min_dist (0.0 to 0.5), and the distance metric (Cosine, Euclidean, and Manhattan). The "ground truth" was defined as the high-dimensional Cosine Similarity matrix. The optimization goal was to maximize the average Spearman Rank Correlation across all nodes. This metric evaluates how well the relative rankings of "nearest neighbors" and "distant strangers" are maintained when moving from 384D to 2D.
-
-Experimental Results After exactly 100 trials, the optimization determined that Manhattan distance outperformed both Cosine and Euclidean metrics for this dataset. The global optimum was identified at Trial 36 with a Spearman correlation of 0.6242, utilizing n_neighbors=8 and min_dist=0.370.
-
-Key Insights & Stability
-
-The Manhattan Advantage: Manhattan distance proved more robust in high-dimensional space, likely due to its reduced sensitivity to outliers compared to the squared-error nature of Euclidean distance.
-Cluster Balance: A relatively low n_neighbors value (8) indicates that the interest-based dataset is sensitive to local variations, while the moderate min_dist (0.370) ensures that points are spread sufficiently for visual clarity without shattering the global topology.
-Reproducibility: The best parameters were verified against three different random seeds (42, 123, 999), demonstrating high visual stability and confirmed search convergence via an Optimization History Plot.
