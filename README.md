@@ -122,9 +122,17 @@ The sensitivity analysis measures how much the embedding vector changes when we 
 To test how sensitive results are to the model choice, we compared `all-MiniLM-L6-v2` with the 3x larger `all-mpnet-base-v2`.
 
 **Latest Results (for Nikola Kriznar):**
-* **Spearman's Rank Correlation:** 0.5343 (Moderate agreement)
+* **Spearman's Rank Correlation:** 0.3873 (Weak to Moderate agreement)
 
-While the overall relationship density is moderately preserved, the models prioritize different semantic features:
+| Rank | all-MiniLM-L6-v2 (Smaller) | Score | all-mpnet-base-v2 (Larger) | Score |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | Zilong Wang | 0.7545 | Zilong Wang | 0.8343 |
+| 2 | Binziya Siddik | 0.7036 | Somto Muotoe | 0.7272 |
+| 3 | Bhavik Kantilal Bhagat | 0.6490 | Mohammad Pakdoust | 0.6974 |
+| 4 | Sridhar Vadla | 0.6353 | Pawan Lingras | 0.6306 |
+| 5 | Md Riad Arifin | 0.6173 | Md Musfiqur Rahman | 0.6261 |
+
+While the overall relationship density is preserved, the models prioritize different semantic features:
 - **MiniLM** (Smaller) matched me with classmates explicitly listing "Music" as a primary keyword.
 - **MPNet** (Larger) identified more subtle semantic links, such as the relationship between "competitive gaming" and specific video game interests.
 
