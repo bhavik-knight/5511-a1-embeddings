@@ -7,7 +7,7 @@ Students with similar interests appear closer together, while those with differe
 
 ## Generated Visualization
 
-![Classmates similarity visualization](visualization.png)
+![Classmates similarity visualization](output/visualization.png)
 
 ## How to run this project
 
@@ -28,7 +28,7 @@ Sentence embeddings work in a similar way but operate on entire sentences rather
 
 The following figure illustrates a simple three-dimensional example of embeddings. In this illustrative representation, one dimension can be interpreted as a royalty-related attribute, another as a gender-related attribute, and the third as an additional contextual dimension. The embeddings (coordinates) shown are illustrative and were created for explanatory purposes to help visualize how embeddings can represent semantic relationships and analogies, such as how the relationship between king and queen reflects the relationship between male and female.
 
-![Example of embeddings](embeddings_example_plot.png)
+![Example of embeddings](output/embeddings_example_plot.png)
 
 
 ## Data Analysis Experiments
@@ -62,7 +62,7 @@ Antonyms or opposite meanings result in **lower scores** (often 0.40 to 0.70) be
 - **Vector Displacement**: A major change pushes the new vector into a different neighborhood of the embedding space (e.g., from "Outdoor Sports" cluster to "Indoor Hobbies" cluster)
 - **Larger Angle**: Because the meaning has shifted, the vector points in a different direction, resulting in a lower cosine similarity score
 
-**Example**: Mohammad's change from "outdoor activities like hiking and camping" to "prefer to stay indoors" resulted in **0.565** similarity - much lower because the core meaning reversed.
+**Example**: Mohammad's change from "outdoor activities like hiking and camping" to "prefer to stay indoors" resulted in **0.561** similarity - much lower because the core meaning reversed.
 
 #### Summary Table
 
