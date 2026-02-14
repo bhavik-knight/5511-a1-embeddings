@@ -7,6 +7,7 @@ requires-python = ">=3.9"
 dependencies = [
     "branca",
     "dash>=4.0.0",
+    "isort>=6.1.0",
     "kaleido>=1.2.0",
     "matplotlib",
     "numba>=0.58.0",
@@ -15,10 +16,12 @@ dependencies = [
     "pandas",
     "plotly>=6.5.2",
     "pyvis",
+    "ruff>=0.15.1",
     "scikit-learn",
     "scipy",
     "seaborn",
     "sentence-transformers",
     "setuptools<70",
+    "ty>=0.0.17",
     "umap-learn>=0.5.4",
 ]

@@ -2,6 +2,7 @@
 Configuration file for the embeddings project.
 Centralizes all paths, model settings, and API keys.
 """
+
 import os
 from pathlib import Path
 
