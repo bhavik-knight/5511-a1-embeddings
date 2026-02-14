@@ -9,7 +9,36 @@ Students with similar interests appear closer together, while those with differe
 
 ![Classmates similarity visualization](output/visualization.png)
 
+## Directory Structure
+
+```text
+.
+├── LICENSE
+├── README.md
+├── data
+│   └── classmates.csv
+├── output
+│   ├── embeddings.json
+│   ├── optimization_history.png
+│   ├── umap_hpo_results.csv
+│   ├── visualization.png
+│   ├── visualization_seed_123.png
+│   ├── visualization_seed_42.png
+│   └── visualization_seed_999.png
+├── pyproject.toml
+├── src
+│   ├── __init__.py
+│   ├── config.py
+│   ├── data_loader.py
+│   ├── embedding_manager.py
+│   ├── main.py
+│   ├── model_comparison.py
+│   └── visualizer.py
+└── uv.lock
+```
+
 ## How to run this project
+
 
 ```bash
 uv sync
@@ -17,6 +46,7 @@ uv run python main.py
 ```
 
 ## What Are Embeddings?
+### By: Miguel Angel Palafox Gomez
 
 Mathematical models need numbers to perform calculations, not letters or words. Because of this, words and sentences must be transformed into numerical representations so that algorithms can process them and perform tasks such as clustering, classification, or similarity detection. 
 
@@ -29,6 +59,8 @@ Sentence embeddings work in a similar way but operate on entire sentences rather
 The following figure illustrates a simple three-dimensional example of embeddings. In this illustrative representation, one dimension can be interpreted as a royalty-related attribute, another as a gender-related attribute, and the third as an additional contextual dimension. The embeddings (coordinates) shown are illustrative and were created for explanatory purposes to help visualize how embeddings can represent semantic relationships and analogies, such as how the relationship between king and queen reflects the relationship between male and female.
 
 ![Example of embeddings](output/embeddings_example_plot.png)
+
+---
 
 
 ## Data Analysis Experiments
@@ -73,9 +105,10 @@ Antonyms or opposite meanings result in **lower scores** (often 0.40 to 0.70) be
 
 **Key Insight**: The embedding model is sensitive to both semantic content and phrasing. Even minor paraphrasing can result in noticeable differences (0.70-0.87), while major semantic changes show significantly lower similarity (0.56).
 
+---
 
 ## Embedding Sensitivity Tests
-
+### By: Nikola Kriznar
 To test how sensitive the matchmaking results are to the choice of AI model, I compared the original model (`all-MiniLM-L6-v2`) with a larger, more complex model (`all-mpnet-base-v2`).
 
 **Quantitative Results**
@@ -94,4 +127,39 @@ The shift in the 2nd and 3rd spots reveals that the models prioritize different 
 2.  **Model A** prioritized "Music," matching me with classmates who explicitly listed music as a hobby (Binziya and Bhavik).
 3.  **Model B** (the more advanced model) successfully identified the semantic link between my interest in "competitive gaming" and classmates who listed "video games" (Somto and Mohammad).
 
-This suggests that the larger MPNet model was better able to capture the semantic relationship between "gaming" and "video games," whereas the smaller MiniLM model relied more heavily on direct keyword overlaps like "music" and "sports."
+
+---
+
+## UMAP Hyperparameter Optimization
+### By: Sridhar Vadla
+
+To ensure the 2D visualization accurately reflects the complex relationships within the original 384-dimensional embedding space, I performed a **Bayesian Hyperparameter Optimization (HPO)** using the **Optuna** framework. This experiment aimed to find the optimal UMAP settings—specifically balancing local and global structure preservation—rather than relying on default parameters which often produce misleading clusters in small datasets.
+
+### Methodology
+The study utilized the **Tree-structured Parzen Estimator (TPE)** sampler to navigate a three-parameter search space:
+*   **n_neighbors**: [2, 50]
+*   **min_dist**: [0.0, 0.5]
+*   **metric**: ['cosine', 'euclidean', 'manhattan']
+
+The "ground truth" was defined as the high-dimensional **Cosine Similarity** matrix. The optimization goal was to maximize the average **Spearman Rank Correlation** across all nodes. This metric evaluates how well the relative rankings of classmates are maintained during dimensionality reduction.
+
+### Experimental Results
+After exactly **100 trials**, the optimization determined that **Manhattan distance** outperformed both Cosine and Euclidean metrics for this dataset. 
+
+| Best Trial | Metric | n_neighbors | min_dist | Spearman Correlation |
+| :--- | :--- | :--- | :--- | :--- |
+| **Trial 36** | **manhattan** | **8** | **0.370** | **0.6242** |
+
+#### Search Convergence
+![Optimization History](output/optimization_history.png)
+
+### Key Insights & Stability
+*   **The Manhattan Advantage**: Manhattan distance proved more robust in high-dimensional space, likely due to its reduced sensitivity to outliers compared to the squared-error nature of Euclidean distance.
+*   **Cluster Balance**: A relatively low `n_neighbors` value (8) suggests that interest-based similarities are highly specific (local), while the moderate `min_dist` (0.370) ensures points are spread sufficiently for visual clarity without shattering the global topology.
+*   **Reproducibility**: The best parameters were verified against three different random seeds (42, 123, 999), demonstrating high visual stability.
+
+#### Optimized Visualizations (Seed Stability)
+| Seed 42 | Seed 123 | Seed 999 |
+| :---: | :---: | :---: |
+| ![Seed 42](output/visualization_seed_42.png) | ![Seed 123](output/visualization_seed_123.png) | ![Seed 999](output/visualization_seed_999.png) |
+
