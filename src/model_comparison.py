@@ -2,45 +2,26 @@
 Model Comparison Module
 Compares embeddings from different models using cosine similarity and Spearman correlation.
 """
-import json
 from pathlib import Path
 import numpy as np
-from scipy.stats import spearmanr
 
-from utils import calculate_cosine_similarity
+from data_loader import DataLoader
+from embedding_manager import EmbeddingManager
+from utils import (
+    calculate_cosine_similarity, 
+    get_top_matches, 
+    calculate_rank_correlation
+)
 import config
-
-
-# ============================================================================
-# Data Loading Functions
-# ============================================================================
-
-def load_embeddings(filepath: Path) -> dict[str, list[float]]:
-    """
-    Load embeddings from a JSON file.
-    
-    Args:
-        filepath: Path to the JSON file containing embeddings
-        
-    Returns:
-        Dictionary mapping names to embedding vectors
-        
-    Raises:
-        FileNotFoundError: If the file doesn't exist
-    """
-    with open(filepath, "r", encoding="utf-8") as f:
-        return json.load(f)
 
 
 # ============================================================================
 # Similarity Calculation Functions
 # ============================================================================
 
-
-
 def get_similarity_scores(
     target_name: str, 
-    embeddings: dict[str, list[float]]
+    embeddings: dict[str, np.ndarray]
 ) -> dict[str, float]:
     """
     Calculate cosine similarity between target person and all others.
@@ -58,64 +39,17 @@ def get_similarity_scores(
     if target_name not in embeddings:
         raise ValueError(f"Name '{target_name}' not found in embeddings!")
     
-    target_vec = np.array(embeddings[target_name])
+    target_vec = embeddings[target_name]
     scores = {}
     
     for name, vec in embeddings.items():
         if name == target_name:
             continue
         
-        other_vec = np.array(vec)
-        similarity = calculate_cosine_similarity(target_vec, other_vec)
+        similarity = calculate_cosine_similarity(target_vec, vec)
         scores[name] = similarity
     
     return scores
-
-
-# ============================================================================
-# Ranking and Comparison Functions
-# ============================================================================
-
-def get_top_matches(
-    scores: dict[str, float], 
-    top_n: int = 3
-) -> list[tuple[str, float]]:
-    """
-    Get the top N matches based on similarity scores.
-    
-    Args:
-        scores: Dictionary of name -> score mappings
-        top_n: Number of top matches to return
-        
-    Returns:
-        List of (name, score) tuples sorted by score (descending)
-    """
-    return sorted(scores.items(), key=lambda x: x[1], reverse=True)[:top_n]
-
-
-def calculate_rank_correlation(
-    scores_a: dict[str, float],
-    scores_b: dict[str, float]
-) -> tuple[float, float]:
-    """
-    Calculate Spearman's rank correlation between two sets of scores.
-    
-    Args:
-        scores_a: First set of similarity scores
-        scores_b: Second set of similarity scores
-        
-    Returns:
-        Tuple of (correlation coefficient, p-value)
-        
-    Note:
-        Assumes both dictionaries have the same keys
-    """
-    # Get aligned lists of scores
-    names = sorted(scores_a.keys())
-    list_a = [scores_a[name] for name in names]
-    list_b = [scores_b[name] for name in names]
-    
-    return spearmanr(list_a, list_b)
 
 
 # ============================================================================
@@ -161,8 +95,8 @@ def print_correlation_results(correlation: float, p_value: float) -> None:
 def print_top_matches_comparison(
     top_a: list[tuple[str, float]],
     top_b: list[tuple[str, float]],
-    model_a_name: str = "Model A (MiniLM)",
-    model_b_name: str = "Model B (mpnet)"
+    model_a_name: str,
+    model_b_name: str
 ) -> None:
     """
     Print side-by-side comparison of top matches from two models.
@@ -175,7 +109,12 @@ def print_top_matches_comparison(
     """
     print(f"{'Top Matches Comparison'}")
     print("-" * 80)
-    print(f"{model_a_name:<40} | {model_b_name}")
+    
+    # Shorten names for table display (handle both huggingface and local paths)
+    m_a = model_a_name.split('/')[-1]
+    m_b = model_b_name.split('/')[-1]
+    
+    print(f"{m_a:<40} | {m_b}")
     print("-" * 80)
     
     max_len = max(len(top_a), len(top_b))
@@ -203,8 +142,8 @@ def print_top_matches_comparison(
 
 def compare_models(
     target_name: str,
-    model_a_path: Path,
-    model_b_path: Path,
+    model_a_name: str,
+    model_b_name: str,
     top_n: int = 3
 ) -> None:
     """
@@ -212,26 +151,29 @@ def compare_models(
     
     Args:
         target_name: Name of the person to analyze
-        model_a_path: Path to first model's embeddings
-        model_b_path: Path to second model's embeddings
+        model_a_name: Name of the first model
+        model_b_name: Name of the second model
         top_n: Number of top matches to display
     """
     print_header(target_name)
     
-    # Load embeddings
-    print(f"Loading embeddings...")
-    try:
-        embeddings_a = load_embeddings(model_a_path)
-        embeddings_b = load_embeddings(model_b_path)
-        print(f"✓ Loaded {len(embeddings_a)} embeddings from Model A")
-        print(f"✓ Loaded {len(embeddings_b)} embeddings from Model B")
-        print()
-    except FileNotFoundError as e:
-        print(f"❌ Error: {e}")
-        print(f"Make sure both embedding files exist:")
-        print(f"  - {model_a_path}")
-        print(f"  - {model_b_path}")
-        return
+    # Load data
+    print(f"Loading data from CSV...")
+    loader = DataLoader(config.CLASSMATES_CSV)
+    loader.load_data()
+    paragraphs = loader.get_paragraphs()
+    names = loader.get_names()
+    
+    # Generate embeddings for Model A
+    print(f"Generating embeddings for {model_a_name}...")
+    manager_a = EmbeddingManager(model_a_name)
+    embeddings_a = manager_a.generate_embeddings(paragraphs, names)
+    
+    # Generate embeddings for Model B
+    print(f"Generating embeddings for {model_b_name}...")
+    manager_b = EmbeddingManager(model_b_name)
+    embeddings_b = manager_b.generate_embeddings(paragraphs, names)
+    print()
     
     # Calculate similarity scores
     print(f"Calculating similarity scores...")
@@ -251,7 +193,7 @@ def compare_models(
     # Get and display top matches
     top_a = get_top_matches(scores_a, top_n)
     top_b = get_top_matches(scores_b, top_n)
-    print_top_matches_comparison(top_a, top_b)
+    print_top_matches_comparison(top_a, top_b, model_a_name, model_b_name)
     
     print("=" * 80)
 
@@ -261,11 +203,11 @@ def main():
     # Configuration
     target_name = "Nikola Kriznar"  # Change this to your name
     
-    # Run comparison
+    # Run comparison using names from config
     compare_models(
         target_name=target_name,
-        model_a_path=config.EMBEDDINGS_MODEL_A,
-        model_b_path=config.EMBEDDINGS_MODEL_B,
+        model_a_name=config.DEFAULT_MODEL,
+        model_b_name=config.ALTERNATIVE_MODEL,
         top_n=5  # Show top 5 matches
     )
 

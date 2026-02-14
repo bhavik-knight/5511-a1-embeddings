@@ -2,47 +2,20 @@
 UMAP Hyperparameter Optimization Script
 Performs Bayesian optimization to find UMAP settings that preserve high-dimensional embedding relationships.
 """
-import json
 import numpy as np
 import optuna
 import umap
-from scipy.stats import spearmanr
-from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
 from sklearn.preprocessing import StandardScaler
 from pathlib import Path
 import pandas as pd
 import matplotlib.pyplot as plt
 import optuna.visualization as vis
 
-def load_embeddings(path: Path):
-    """Load embeddings from JSON file."""
-    with open(path, 'r') as f:
-        data = json.load(f)
-    names = list(data.keys())
-    embeddings = np.array(list(data.values()))
-    return names, embeddings
+from data_loader import DataLoader
+from embedding_manager import EmbeddingManager
+from utils import load_embeddings_json, calculate_global_preservation_score
+import config
 
-def calculate_spearman_correlation(high_dim_sim, low_dim_dist):
-    """
-    Calculate the average Spearman rank correlation across all points.
-    Correlates high-D similarity with low-D negative distance.
-    """
-    correlations = []
-    n = high_dim_sim.shape[0]
-    for i in range(n):
-        # Exclude the point itself
-        mask = np.ones(n, dtype=bool)
-        mask[i] = False
-        
-        sims = high_dim_sim[i, mask]
-        dists = low_dim_dist[i, mask]
-        
-        # Rank correlation between sims and -dists (higher similarity should be lower distance)
-        corr, _ = spearmanr(sims, -dists)
-        if not np.isnan(corr):
-            correlations.append(corr)
-            
-    return np.mean(correlations) if correlations else 0.0
 
 def objective(trial, embeddings):
     """Optuna objective function."""
@@ -66,13 +39,9 @@ def objective(trial, embeddings):
     try:
         reduced_data = reducer.fit_transform(scaled_data)
         
-        # High-dimensional cosine similarity
-        high_dim_sim = cosine_similarity(embeddings)
+        # Calculate preservation score using centralized utility
+        score = calculate_global_preservation_score(embeddings, reduced_data)
         
-        # Low_dimensional Euclidean distance
-        low_dim_dist = euclidean_distances(reduced_data)
-        
-        score = calculate_spearman_correlation(high_dim_sim, low_dim_dist)
     except Exception as e:
         print(f"Trial failed with error: {e}")
         return -1.0 # Return poor score on failure
@@ -81,13 +50,34 @@ def objective(trial, embeddings):
 
 def run_hpo():
     """Main HPO loop."""
-    print("Loading data...")
-    # Using absolute paths as requested
-    base_dir = Path(__file__).parent.parent
-    embeddings_path = base_dir / "output" / "embeddings.json"
-    names, embeddings = load_embeddings(embeddings_path)
+    print("=" * 80)
+    print("UMAP Hyperparameter Optimization")
+    print("=" * 80)
     
-    print(f"Loaded {len(names)} embeddings. Starting optimization...")
+    # Using absolute paths from config
+    embeddings_path = config.EMBEDDINGS_JSON
+    
+    # Try to load existing embeddings; if not, generate them
+    if not embeddings_path.exists():
+        print(f"Embeddings file not found at {embeddings_path}. Generating now...")
+        loader = DataLoader(config.CLASSMATES_CSV)
+        loader.load_data()
+        paragraphs = loader.get_paragraphs()
+        names = loader.get_names()
+        
+        manager = EmbeddingManager(config.DEFAULT_MODEL)
+        embeddings_dict = manager.generate_embeddings(paragraphs, names)
+        manager.save_embeddings(embeddings_path)
+        print(f"✓ Generated and saved embeddings for {config.DEFAULT_MODEL}")
+    else:
+        print(f"Loading embeddings from {embeddings_path}...")
+        embeddings_dict = load_embeddings_json(embeddings_path)
+    
+    names = list(embeddings_dict.keys())
+    embeddings = np.array(list(embeddings_dict.values()))
+    
+    print(f"Loaded {len(names)} embeddings. Starting optimization (100 trials)...")
+    print()
     
     study = optuna.create_study(
         direction='maximize', 
@@ -96,30 +86,33 @@ def run_hpo():
     )
     study.optimize(lambda trial: objective(trial, embeddings), n_trials=100)
     
-    print("\nOptimization complete!")
+    print("\n" + "=" * 80)
+    print("Optimization Complete!")
     print(f"Best parameters: {study.best_params}")
     print(f"Best Spearman correlation: {study.best_value:.4f}")
+    print("=" * 80)
     
     # 1. Export results to CSV
     df = study.trials_dataframe()
-    results_path = base_dir / "output" / "umap_hpo_results.csv"
+    results_path = config.OUTPUT_DIR / "umap_hpo_results.csv"
     df.to_csv(results_path, index=False)
-    print(f"Trials exported to {results_path}")
+    print(f"✓ Trials exported to {results_path}")
     
-    # 2. Generate Optimization History Plot
+    # 2. Generate Optimization History Plot (using plotly if available, but output to png)
     fig = vis.plot_optimization_history(study)
-    history_plot_path = base_dir / "output" / "optimization_history.png"
+    history_plot_path = config.OUTPUT_DIR / "optimization_history.png"
     fig.write_image(str(history_plot_path))
-    print(f"Optimization history plot saved to {history_plot_path}")
+    print(f"✓ Optimization history plot saved to {history_plot_path}")
     
     # 3. Verification & Stability: Run best model with different seeds
+    print(f"\nVerifying stability across different seeds...")
     best_params = study.best_params
     seeds = [42, 123, 999]
     scaler = StandardScaler()
     scaled_data = scaler.fit_transform(embeddings)
     
     for seed in seeds:
-        print(f"Generating visualization for seed {seed}...")
+        print(f"  - Generating visualization for seed {seed}...")
         reducer = umap.UMAP(
             **best_params,
             n_components=2,
@@ -128,14 +121,14 @@ def run_hpo():
         )
         reduced = reducer.fit_transform(scaled_data)
         
-        plt.figure(figsize=(12, 8))
+        plt.figure(figsize=config.PLOT_FIGSIZE)
         plt.scatter(reduced[:, 0], reduced[:, 1], alpha=0.6, edgecolors='w', s=100)
         
         for i, name in enumerate(names):
             plt.annotate(
                 name, 
                 (reduced[i, 0], reduced[i, 1]), 
-                fontsize=8, 
+                fontsize=config.PLOT_FONTSIZE, 
                 xytext=(5, 5), 
                 textcoords='offset points'
             )
@@ -143,10 +136,12 @@ def run_hpo():
         plt.title(f"UMAP Visualization (Seed {seed})\nn_neighbors={best_params['n_neighbors']}, min_dist={best_params['min_dist']:.3f}, metric={best_params['metric']}")
         plt.axis("off")
         
-        vis_path = base_dir / "output" / f"visualization_seed_{seed}.png"
-        plt.savefig(vis_path, dpi=300, bbox_inches='tight')
+        vis_path = config.OUTPUT_DIR / f"visualization_seed_{seed}.png"
+        plt.savefig(vis_path, dpi=config.PLOT_DPI, bbox_inches='tight')
         plt.close()
-        print(f"Saved visualization to {vis_path}")
+    
+    print(f"\n✓ Stability visualizations saved to {config.OUTPUT_DIR}")
+    print("=" * 80)
 
 if __name__ == "__main__":
     run_hpo()

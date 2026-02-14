@@ -23,10 +23,6 @@ CLASSMATES_CSV = DATA_DIR / "classmates.csv"
 EMBEDDINGS_JSON = OUTPUT_DIR / "embeddings.json"
 VISUALIZATION_PNG = OUTPUT_DIR / "visualization.png"
 
-# Model comparison output paths
-EMBEDDINGS_MODEL_A = OUTPUT_DIR / "embeddings_model_a.json"
-EMBEDDINGS_MODEL_B = OUTPUT_DIR / "embeddings_model_b.json"
-
 # Model settings
 DEFAULT_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 ALTERNATIVE_MODEL = "sentence-transformers/all-mpnet-base-v2"
