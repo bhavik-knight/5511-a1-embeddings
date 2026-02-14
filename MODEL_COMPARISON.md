@@ -29,7 +29,7 @@ A Spearman score of ~0.39 indicates a **weak to moderate positive correlation**.
 ## Qualitative Insights
 - **Model Agreement**: Both models identified **Zilong Wang** as the #1 match for Nikola. This suggests very high semantic overlap in their descriptions (specifically keywords like "competitive gaming" and "traveling").
 - **Embedding Density**: The `mpnet` (larger) model tends to assign higher raw similarity scores (e.g., 0.83 vs 0.75 for the top match). This indicates a more "confident" clustering in the higher-dimensional space.
-- **Semantic Nuance**: `mpnet` ranked **Somto Muotoe** significantly higher (#2 vs not in Top 5 for MiniLM). Somto's description focuses on technology and specific hobbies, which the larger model likely linked more effectively to Nikola's specific mentions of tech-hobbies.
+- **Semantic Nuance**: `mpnet` ranked **Somto Muotoe** significantly higher (#2 vs not in Top 5 for MiniLM). Somto's description focuses on technology and specific hobbies, which the larger model likely linked more effectively to Nikola's specific mentions of gaming.
 
 ## Conclusion
 For simple keyword-based similarity, `MiniLM` is highly efficient. However, for identifying nuanced relationships between diverse interests (e.g., relating "gaming" to specific "tech interests"), the `mpnet` model provides a more sophisticated ranking, albeit at a higher computational cost.
