@@ -45,6 +45,9 @@ uv sync
 uv run python main.py
 ```
 
+
+---
+
 ## What Are Embeddings?
 ### By: Miguel Angel Palafox Gomez
 
@@ -64,7 +67,7 @@ The following figure illustrates a simple three-dimensional example of embedding
 
 
 ## Data Analysis Experiments
-#### By: Bhavik Kantilal Bhagat
+### By: Bhavik Kantilal Bhagat
 
 The changes made in the classmates.csv file are as follows.
 
