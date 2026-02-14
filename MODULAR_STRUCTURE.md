@@ -11,8 +11,10 @@ src/
 ├── data_loader.py           # DataLoader class
 ├── embedding_manager.py     # EmbeddingManager class
 ├── visualizer.py            # Visualizer class
+├── utils.py                 # Shared utility functions
 ├── main.py                  # Main entry point
-└── model_comparison.py      # Model comparison script
+├── model_comparison.py      # Model comparison script
+└── data_comparison.py       # Data sensitivity analysis script
 ```
 
 ## Module Descriptions
@@ -78,7 +80,30 @@ visualizer.create_visualization(
 
 ---
 
-### 4. **main.py** - Main Entry Point
+### 4. **utils.py** - Shared Utility Functions
+**Purpose**: Reusable helper functions used across multiple modules
+
+**Functions**:
+- `calculate_cosine_similarity(vec1, vec2)` - Calculate cosine similarity between two vectors
+
+**Usage**:
+```python
+from utils import calculate_cosine_similarity
+import numpy as np
+
+vec1 = np.array([1, 2, 3])
+vec2 = np.array([4, 5, 6])
+similarity = calculate_cosine_similarity(vec1, vec2)
+print(f"Similarity: {similarity:.4f}")
+```
+
+**Used by**:
+- `model_comparison.py` - For comparing embeddings from different models
+- `data_comparison.py` - For sensitivity analysis
+
+---
+
+### 5. **main.py** - Main Entry Point
 **Purpose**: Orchestrate the entire pipeline
 
 **Pipeline Steps**:
