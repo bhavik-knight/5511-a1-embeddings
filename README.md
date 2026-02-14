@@ -30,6 +30,50 @@ The following figure illustrates a simple three-dimensional example of embedding
 
 ![Example of embeddings](embeddings_example_plot.png)
 
+
+## Data Analysis Experiments
+#### By: Bhavik Kantilal Bhagat
+
+The changes made in the classmates.csv file are as follows.
+
+| Name | Major Change? | Original Description | New Description | Impact |
+| --- | --- | --- | --- | --- |
+| Greg Kirczenow | No | "Swim, bike, run" | "swimming, cycling, running" | 0.873410 |
+| Mohammad Pakdoust | Yes | "I am passionate about outdoor activities like hiking and camping, and I also enjoy movies and video games." | "I prefer to stay indoors, and I also do not like to watch movies or play video games." | 0.561741 |
+| Bhavik Kantilal Bhagat | No | "Chess, Maths and Music." | "I enjoy playing chess, solving math puzzles, and listening to music." | 0.727488 |
+
+### Impact of Changes
+
+#### 1. Minor Changes (Synonyms) → High Similarity
+
+When you replace a word like "enjoy" with "like," or rephrase with synonyms, the model produces a **high similarity score** (often 0.70 to 0.90) because:
+
+- **Shared Context**: During training on millions of sentences, words like "enjoy" and "like" appear in almost identical environments (e.g., "I ____ trail running")
+- **Vector Proximity**: Because these words are interchangeable in most contexts, the model places them very close together in the high-dimensional embedding space
+- **Small Angle**: Cosine similarity measures the angle between two vectors. Since synonyms point in almost the same direction, the cosine of the angle is close to 1.0
+
+**Example**: Greg's change from "Swim, bike, run" to "swimming, cycling, running" resulted in **0.873** similarity - very high because the core activities remain identical.
+
+#### 2. Major Changes (Antonyms/Opposite Meaning) → Lower Similarity
+
+Antonyms or opposite meanings result in **lower scores** (often 0.40 to 0.70) because:
+
+- **Opposite Semantic Direction**: While antonyms like "enjoy" vs. "don't like" might appear in similar sentence structures, the sentiment and intent are opposites. Modern transformers are sensitive to these shifts
+- **Vector Displacement**: A major change pushes the new vector into a different neighborhood of the embedding space (e.g., from "Outdoor Sports" cluster to "Indoor Hobbies" cluster)
+- **Larger Angle**: Because the meaning has shifted, the vector points in a different direction, resulting in a lower cosine similarity score
+
+**Example**: Mohammad's change from "outdoor activities like hiking and camping" to "prefer to stay indoors" resulted in **0.565** similarity - much lower because the core meaning reversed.
+
+#### Summary Table
+
+| Change Type | Impact on Meaning | Resulting Vector Space | Similarity Score |
+|-------------|-------------------|------------------------|------------------|
+| **Minor (Synonym)** | Preserves intent/context | Vectors stay in the same "cluster" | High (0.70-0.90) |
+| **Major (Antonym)** | Reverses or alters intent | Vector moves to a different "cluster" | Lower (0.40-0.70) |
+
+**Key Insight**: The embedding model is sensitive to both semantic content and phrasing. Even minor paraphrasing can result in noticeable differences (0.70-0.87), while major semantic changes show significantly lower similarity (0.56).
+
+
 ## Embedding Sensitivity Tests
 
 To test how sensitive the matchmaking results are to the choice of AI model, I compared the original model (`all-MiniLM-L6-v2`) with a larger, more complex model (`all-mpnet-base-v2`).
