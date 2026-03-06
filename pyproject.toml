@@ -21,7 +21,7 @@ dependencies = [
     "scipy",
     "seaborn",
     "sentence-transformers",
-    "setuptools<70",
+    "setuptools<79",
     "ty>=0.0.17",
     "umap-learn>=0.5.4",
 ]
